@@ -23,13 +23,19 @@ while [ "$league_id" != "null" ]; do
     ## TEAM TODO WIP
     # for time being, ignore team name as username is more important for tracking stats anyway
     rosters_response=$(curl -s https://api.sleeper.app/v1/league/$league_id/rosters)
-    echo "$rosters_response" | jq -c '.[]' | while read -r roster_data;
-    do
-        echo "$roster_data" | jq -r '[.owner_id, .roster_id, .league_id, null, .metadata.record, .metadata.streak, .settings.fpts, .settings.fpts_against] | @csv' >> "$teams_file"
-    done
-
+    echo "$rosters_response" | jq -r '.[] | [.owner_id, .roster_id, .league_id, null, .metadata.record, .metadata.streak, .settings.fpts, .settings.fpts_against] | @csv' >> "$teams_file"
 
     ## MATCHUP
+    i=1
+    while true; do
+        matchups_response=$(curl -s https://api.sleeper.app/v1/league/$league_id/matchups/$i)
+        if echo "$matchups_response" | jq -e 'length == 0' > /dev/null; then
+            break
+        else
+            echo "$matchups_response" | jq -r ".[] | [$league_id, .matchup_id, .roster_id, $i, .points] | @csv" >> "$matchups_file"
+        fi
+        ((i++))
+    done
 
 
 
