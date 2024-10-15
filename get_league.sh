@@ -5,6 +5,7 @@ league_id="1120774194318479360"
 league_file="leagues.csv"
 user_file="users.csv"
 teams_file="teams.csv"
+matchups_file="matchups.csv"
 
 while [ "$league_id" != "null" ]; do
     ## LEAGUE
@@ -22,13 +23,14 @@ while [ "$league_id" != "null" ]; do
     ## TEAM TODO WIP
     # for time being, ignore team name as username is more important for tracking stats anyway
     rosters_response=$(curl -s https://api.sleeper.app/v1/league/$league_id/rosters)
-    echo "$rosters_response" | jq -r '.[]' | while read -r roster_data;
+    echo "$rosters_response" | jq -c '.[]' | while read -r roster_data;
     do
-        echo "$roster_data"
+        echo "$roster_data" | jq -r '[.owner_id, .roster_id, .league_id, null, .metadata.record, .metadata.streak, .settings.fpts, .settings.fpts_against] | @csv' >> "$teams_file"
     done
 
 
     ## MATCHUP
+
 
 
     # repeat for each league recursively
